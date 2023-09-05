@@ -65,7 +65,7 @@ contract Tracking{
             emit ShipmentCreated(msg.sender, _reciever, _pickupTime, _distance, _price);
 
             function startShipment(address _sender,address _reciever, uint256 _index) public{
-                
+                Shipment storage shipment = shipments[_sender][_index]
             }
     }
 }
