@@ -33,5 +33,39 @@ contract Tracking{
     TypeShipment[] typeShipments;
 
     event ShipmentCreated(address indexed sender,address indexed reciever,uint256 pickupTime,uint256 distance,uint256 price);
-    event ShipmentInTransit(address)
+    event ShipmentInTransit(address indexed sender,address indexed reciever,uint256 pickupTime);
+    event ShipmentDelivered(address indexed sender,address indexed reciever,uint256 deliveryTime);
+    event ShipmentPaid(address indexed sender,address indexed reciever,uint256 amount);
+
+    constructor(){
+        ShipmentCount=0;
+    }
+
+    function createShipment(address _reciever, uint256 _pickupTime, uint256 _distance, uint256 _price) public payable{
+        require(msg.value == _price, "Payment amount must match the price.");
+
+        Shipment memory shipment = Shipment(msg.sender, _reciever, _pickupTime, 0, _distance, _price, ShipmentStatus.PENDING, false);
+
+        shipments[msg.sender].push(shipment);
+        shipmentCount++;
+
+            typeShipments.push(
+                TypeShipment(
+                    msg.sender,
+                    _reciever,
+                    _pickupTime,
+                    0,
+                    _distance,
+                    _price,
+                    ShipmentStatus.PENDING,
+                    false
+                )
+            );
+
+            emit ShipmentCreated(msg.sender, _reciever, _pickupTime, _distance, _price);
+
+            function startShipment(address _sender,address _reciever, uint256 _index) public{
+                
+            }
+    }
 }
