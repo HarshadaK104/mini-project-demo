@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 contract Tracking{
-    enum ShipmentStatus {PENDING , IN_TANSIT , DELIVERED}
+    enum ShipmentStatus {PENDING , IN_TRANSIT , DELIVERED}
 
     struct Shipment{
         address sender;
@@ -65,7 +65,56 @@ contract Tracking{
             emit ShipmentCreated(msg.sender, _reciever, _pickupTime, _distance, _price);
 
             function startShipment(address _sender,address _reciever, uint256 _index) public{
-                Shipment storage shipment = shipments[_sender][_index]
+                Shipment storage shipment = shipments[_sender][_index];
+                TypeShipment storage typeShipment = typeShipment[_index];
+
+                require(shipment.reciever ==  _reciever, "Invalid receiver.");
+                require(shipment.status == ShipmentStatus.PENDING, "Shipment already in transit");
+
+                shipment.status = ShipmentStatus.IN_TRANSIT;
+                typeShipment.status = ShipmentStaus.IN_TRANSIT;
+
+                emit ShipmentInTransit(_sender, _receiver, shipment.pickupTime);
+
+            }
+
+            function completesShipment(address _sender, address _receiver, uint256 _index)public{
+                Shipment storage shipment = shupments[_sender][_index];
+                TypeShipment storage typeShipment = typeShipments[_index];
+
+                require(shipment.receiver == _receiver, "Invalid receiver.");
+                require(shipment.status == ShipmentStatus.IN_TRANSIT, "Shipment not in transit.");
+                require(!shipment.isPaid, "Shipment is already paid.");
+
+                shipment.status = ShipmentStaus.DELIVERED;
+                typeShipment.status = ShipmentStatus.DELIVERED;
+                typeShipment.deliveryTime = block.timestamp;
+                shipment.deliveryTime = block.timestamp;
+
+                uint256 amount = shipment.price;
+
+                payable(shipment.sender).transfer(amount);
+
+                shipment.isPaid = true;
+                typeShipment.isPaid = true;
+
+                emit ShipmentDelivered(_sender,_receiver, shipment.deliveryTime);
+                emit ShipmentPaid(_sender,_receiver,amount);
+            }
+
+            function getShipment(address _sender, uint256 _index)public view returns (address, address, uint256, uint256, uint256, uint256, ShipmentStatus,bool){
+                Shipment memory shipment = shipments [_sender][_index];
+                return ( shipment.sender, shipment.receiver, shipment.pickupTime,
+                shipment.deliveryTime, shipment.distance, shipment.price, shipment.status,
+                shipment.isPaid);
+            }
+
+            function getShipmentCount(address _sender) public view returns (uint256) {
+                return shipments[_sender].length;
+            }
+
+            function getAllTransactions () public view returns( TypeShipment[] memory){
+                return typeShipments;
             }
     }
 }

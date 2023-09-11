@@ -2,14 +2,13 @@ const hre = require("hardhat");
 
 async function main() {
 
-  const lock = await hre.ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+  const Tracking = await hre.ethers.deployContract("Tracking");
+  const tracking = await Tracking.deploy();
 
-  await lock.waitForDeployment();
+  await tracking.deployed();
 
   console.log(
-    `deployed to ${lock.target}`
+    ` Tracking deployed to ${tracking.address}`
   );
 }
 
